@@ -22,6 +22,7 @@ const BOARD_SIZE = 24;
 
 document.addEventListener('DOMContentLoaded', function () {
     initParticles();
+    initStars();
     loadChapters();
     generatePlayerInputs();
     generateLegend();
@@ -29,16 +30,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function initParticles() {
     const container = document.getElementById('particles');
-    for (let i = 0; i < 50; i++) {
+    if (!container) return;
+
+    for (let i = 0; i < 60; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 15 + 's';
-        particle.style.animationDuration = (10 + Math.random() * 10) + 's';
-        const colors = ['#00f5ff', '#ff00ff', '#a855f7', '#22c55e'];
-        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.boxShadow = '0 0 10px ' + particle.style.background;
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 15) + 's';
+        const colors = ['#00f5ff', '#ff00ff', '#a855f7', '#22c55e', '#ffd700'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.background = color;
+        particle.style.boxShadow = '0 0 15px ' + color;
+        particle.style.width = (4 + Math.random() * 4) + 'px';
+        particle.style.height = particle.style.width;
         container.appendChild(particle);
+    }
+}
+
+function initStars() {
+    const container = document.getElementById('stars');
+    if (!container) return;
+
+    for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        star.style.animationDuration = (2 + Math.random() * 3) + 's';
+        const size = (1 + Math.random() * 3) + 'px';
+        star.style.width = size;
+        star.style.height = size;
+        container.appendChild(star);
     }
 }
 
