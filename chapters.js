@@ -222,9 +222,214 @@ const CHAPTERS = [
                 }
             ]
         }
-    }
+    },
 
     // ============================================
     // AJOUTE D'AUTRES CHAPITRES ICI
     // ============================================
+    // ============================================
+    // CHAPITRE: LE FANTASTIQUE (ANALYSE & TEXTES)
+    // ============================================
+    {
+        id: 'fantastique-analyse-4eme',
+        title: 'Analyse du Fantastique',
+        subject: 'Français',
+        icon: '👻',
+        description: 'Grammaire, figures de style et analyse de texte',
+        questions: {
+            discovery: [
+                {
+                    question: "Dans la phrase : 'La nuit était noire comme de l'encre', quelle est la figure de style ?",
+                    answers: ["Une comparaison", "Une métaphore", "Une personnification", "Une hyperbole"],
+                    correct: 0,
+                    courseReminder: "Il y a présence du mot-outil 'comme' qui relie le comparé (nuit) au comparant (encre)."
+                },
+                {
+                    question: "Lis ce début de texte : 'Le 15 mai 1886, j'arrivai à Paris.' De quelle partie du récit s'agit-il ?",
+                    answers: ["L'incipit", "La chute", "Le déroulement", "L'épilogue"],
+                    correct: 0,
+                    courseReminder: "C'est le début du récit qui pose le cadre spatio-temporel (Date + Lieu) et présente le narrateur."
+                },
+                {
+                    question: "Quelle est la nature du mot souligné : 'Une ombre \u001b[4mménacante\u001b[0m approchait.' ?",
+                    answers: ["Adjectif qualificatif", "Nom commun", "Verbe", "Adverbe"],
+                    correct: 0,
+                    courseReminder: "Ce mot qualifie le nom 'ombre' et s'accorde avec lui. C'est donc un adjectif."
+                },
+                {
+                    question: "Quel sentiment domine dans cet extrait : 'Je tremblais, mes dents claquaient, je voulais fuir.' ?",
+                    answers: ["La terreur", "La joie", "La colère", "L'ennui"],
+                    correct: 0,
+                    courseReminder: "Les manifestations physiques (tremblements, claquement de dents) sont typiques d'une peur intense."
+                },
+                {
+                    question: "Si un texte commence par 'Il était une fois une fée...', est-ce du fantastique ?",
+                    answers: ["Non, c'est du merveilleux", "Oui, c'est du fantastique", "C'est de la science-fiction", "C'est réaliste"],
+                    correct: 0,
+                    courseReminder: "Dans le merveilleux, la magie est normale. Dans le fantastique, elle fait peur car elle surgit dans le réel."
+                }
+            ],
+            easy: [
+                {
+                    question: "Dans la phrase : 'Le vent hurlait de douleur', quelle est la figure de style ?",
+                    answers: ["Une personnification", "Une comparaison", "Une anaphore", "Une antithèse"],
+                    correct: 0,
+                    courseReminder: "On attribue un comportement humain (hurler de douleur, avoir mal) à un élément inanimé (le vent)."
+                },
+                {
+                    question: "Quel est le point de vue ici : 'Je sentais mon cœur battre à tout rompre' ?",
+                    answers: ["Interne", "Externe", "Omniscient", "Neutre"],
+                    correct: 0,
+                    courseReminder: "On a accès aux sensations physiques et aux pensées du narrateur ('Je'), c'est donc interne."
+                },
+                {
+                    question: "Dans la phrase 'Soudain, la porte claqua', quelle est la valeur du Passé Simple ?",
+                    answers: ["Action soudaine et brève", "Action d'habitude", "Description", "Action longue"],
+                    correct: 0,
+                    courseReminder: "Le passé simple est utilisé pour les actions de premier plan qui font avancer l'histoire brusquement."
+                },
+                {
+                    question: "Quelle est la fonction de 'sombre' dans : 'Le château était sombre' ?",
+                    answers: ["Attribut du sujet", "Épithète", "COD", "COI"],
+                    correct: 0,
+                    courseReminder: "L'adjectif est séparé du nom 'château' par le verbe d'état 'était'. Il est donc attribut."
+                },
+                {
+                    question: "Quel mot montre le doute ici : 'C'était peut-être un rêve...' ?",
+                    answers: ["Peut-être", "C'était", "Rêve", "Un"],
+                    correct: 0,
+                    courseReminder: "L'adverbe 'peut-être' est un modalisateur qui indique que le narrateur n'est pas sûr de lui."
+                }
+            ],
+            medium: [
+                {
+                    question: "Identifie la figure : 'Cette obscure clarté tombe des étoiles'.",
+                    answers: ["Un oxymore", "Une antithèse", "Une hyperbole", "Un pléonasme"],
+                    correct: 0,
+                    courseReminder: "Deux mots de sens contraire (obscure / clarté) sont collés l'un à l'autre dans le même groupe grammatical."
+                },
+                {
+                    question: "Quelle est la valeur de l'imparfait ici : 'Chaque soir, il fermait sa porte à clé.' ?",
+                    answers: ["Imparfait d'habitude", "Imparfait de description", "Imparfait de second plan", "Imparfait historique"],
+                    correct: 0,
+                    courseReminder: "L'indicateur de temps 'Chaque soir' montre que c'est une action qui se répète régulièrement."
+                },
+                {
+                    question: "Dans la phrase 'J'ai vu un spectre', quelle est la nature de 'spectre' ?",
+                    answers: ["Nom commun", "Adjectif", "Verbe", "Pronom"],
+                    correct: 0,
+                    courseReminder: "C'est un mot qui désigne une entité, précédé d'un déterminant ('un'). C'est un nom."
+                },
+                {
+                    question: "Analyse la phrase : 'Il y a une ombre'. Pourquoi est-elle mal rédigée pour un devoir ?",
+                    answers: ["Elle commence par 'Il y a'", "Elle est trop courte", "Il manque un verbe", "C'est familier"],
+                    correct: 0,
+                    courseReminder: "La fiche interdit de commencer par 'Il y a'. Il faut préférer : 'Une ombre apparaît...' ou 'On distingue une ombre...'."
+                },
+                {
+                    question: "Quel point de vue narratif sait TOUT (passé, futur, pensées de tous) ?",
+                    answers: ["Omniscient", "Interne", "Externe", "Subjectif"],
+                    correct: 0,
+                    courseReminder: "Omniscient vient du latin 'omni' (tout) et 'sciens' (savoir). Le narrateur est comme un dieu."
+                }
+            ],
+            hard: [
+                {
+                    question: "Quelle figure est : 'Je meurs de soif' ?",
+                    answers: ["Une hyperbole", "Un euphémisme", "Une litote", "Une métaphore"],
+                    correct: 0,
+                    courseReminder: "C'est une exagération volontaire. On ne va pas réellement mourir, on a juste très soif."
+                },
+                {
+                    question: "Dans 'La main qui m'a saisi était froide', quelle est la fonction de la proposition 'qui m'a saisi' ?",
+                    answers: ["Complément de l'antécédent", "COD", "Sujet", "Complément circonstanciel"],
+                    correct: 0,
+                    courseReminder: "C'est une proposition subordonnée relative. Elle complète le nom 'main' (l'antécédent)."
+                },
+                {
+                    question: "Si le narrateur dit : 'Il ouvrit la porte. Ses mains tremblaient', quel est le point de vue ?",
+                    answers: ["Externe", "Interne", "Omniscient", "Autobiographique"],
+                    correct: 0,
+                    courseReminder: "On voit les gestes (ouvrir, trembler) de l'extérieur, mais on n'a pas accès à ses pensées. C'est comme une caméra."
+                },
+                {
+                    question: "Quelle figure adoucit la réalité : 'Il s'est éteint' (pour il est mort) ?",
+                    answers: ["Un euphémisme", "Une litote", "Une antiphrase", "Une hyperbole"],
+                    correct: 0,
+                    courseReminder: "L'euphémisme sert à masquer une réalité brutale ou triste par un mot plus doux."
+                },
+                {
+                    question: "Pourquoi l'auteur utilise-t-il des points de suspension (...) dans un moment de peur ?",
+                    answers: ["Pour montrer que la pensée est hachée/paniquée", "Parce qu'il a oublié la suite", "Pour faire une pause", "C'est une erreur"],
+                    correct: 0,
+                    courseReminder: "La ponctuation traduit l'émotion. La peur coupe le souffle et empêche de penser ou de parler de manière fluide."
+                }
+            ],
+            expert: [
+                {
+                    question: "Quelle est la figure : 'C'est un roc ! C'est un pic ! C'est un cap !' ?",
+                    answers: ["Une gradation", "Une anaphore", "Une répétition", "Une périphrase"],
+                    correct: 0,
+                    courseReminder: "C'est une énumération où les termes sont de plus en plus forts (intensité croissante)."
+                },
+                {
+                    question: "Dans 'J'entendis un bruit', quelle est la nature de 'J'' ?",
+                    answers: ["Pronom personnel", "Sujet", "Déterminant", "Nom propre"],
+                    correct: 0,
+                    courseReminder: "Attention à ne pas confondre Nature et Fonction ! Sa nature est pronom, sa fonction est Sujet."
+                },
+                {
+                    question: "Quelle est la figure d'opposition dans : 'Je vis, je meurs ; je me brûle et me noie' ?",
+                    answers: ["Une antithèse", "Un oxymore", "Un chiasme", "Une comparaison"],
+                    correct: 0,
+                    courseReminder: "Les mots contraires sont éloignés dans la phrase (séparés par une virgule ou un point-virgule), ce n'est donc pas un oxymore."
+                },
+                {
+                    question: "Quelle est la valeur du présent ici : 'Soudain, la bête bondit et l'attrape' (dans un récit au passé) ?",
+                    answers: ["Présent de narration", "Présent de vérité générale", "Présent d'énonciation", "Passé récent"],
+                    correct: 0,
+                    courseReminder: "L'auteur passe au présent pour rendre l'action plus vivante et immédiate aux yeux du lecteur."
+                },
+                {
+                    question: "Quelle figure consiste à dire le contraire de ce que l'on pense (Ironie) ?",
+                    answers: ["L'antiphrase", "L'antithèse", "Le paradoxe", "L'oxymore"],
+                    correct: 0,
+                    courseReminder: "Exemple : Dire 'Bravo !' à quelqu'un qui a fait tomber son assiette."
+                }
+            ],
+            challenge: [
+                {
+                    question: "Identifie la figure : 'Le roi des animaux rugit.'",
+                    answers: ["Une périphrase", "Une métaphore", "Une comparaison", "Une personnification"],
+                    correct: 0,
+                    courseReminder: "On remplace le mot 'Lion' par une expression qui le définit ('Le roi des animaux')."
+                },
+                {
+                    question: "Dans 'Il faut manger pour vivre et non vivre pour manger', quelle est la figure ?",
+                    answers: ["Un chiasme", "Une anaphore", "Une antithèse", "Un parallèle"],
+                    correct: 0,
+                    courseReminder: "C'est une structure en miroir (AB / BA) : Manger/Vivre // Vivre/Manger."
+                },
+                {
+                    question: "Quelle est la nature de la proposition : 'Je sais \u001b[4mqu'il est là\u001b[0m' ?",
+                    answers: ["Subordonnée conjonctive (Complétive)", "Subordonnée relative", "Proposition indépendante", "Groupe nominal"],
+                    correct: 0,
+                    courseReminder: "Elle complète le verbe 'savoir' (Je sais quoi ? -> qu'il est là). Elle est introduite par la conjonction 'que'."
+                },
+                {
+                    question: "Si je remplace 'Je' par 'Nous' dans la phrase 'Je saisis mon arme', qu'est-ce que cela devient au présent ?",
+                    answers: ["Nous saisissons notre arme", "Nous saissisons notre arme", "Nous prenons notre arme", "Nous avons saisi notre arme"],
+                    correct: 0,
+                    courseReminder: "Attention à l'orthographe : le verbe saisir (2e groupe) fait 'saisissons' avec -iss-."
+                },
+                {
+                    question: "Quelle est la nature du mot 'leur' dans : 'Je leur parle' ?",
+                    answers: ["Pronom personnel", "Déterminant possessif", "Adjectif", "Préposition"],
+                    correct: 0,
+                    courseReminder: "Ici, 'leur' remplace un nom (Je parle à qui ? -> à eux). C'est un pronom. (Dans 'Leur chien', ce serait un déterminant)."
+                }
+            ]
+        }
+    }
+
 ];
