@@ -1420,8 +1420,93 @@ body {
 }
 
 /* ========================================
-   RESPONSIVE
+   TIMER & STATS
    ======================================== */
+
+.timer-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 30px;
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+}
+
+.timer-icon {
+    font-size: 1.3rem;
+}
+
+.timer-display {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--neon-cyan);
+    min-width: 50px;
+    text-align: center;
+}
+
+.timer-display.timer-warning {
+    color: var(--diff-medium);
+    animation: timerPulse 0.5s ease-in-out infinite;
+}
+
+.timer-display.timer-critical {
+    color: var(--diff-expert);
+    animation: timerPulse 0.3s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.player-accuracy {
+    font-size: 0.85rem;
+    color: var(--neon-green);
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.final-score-stats {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.game-stats-summary {
+    width: 100%;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.1));
+    border: 2px solid rgba(0, 245, 255, 0.3);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.game-stats-summary h4 {
+    font-family: var(--font-display);
+    color: var(--neon-cyan);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.game-stats-summary p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+/* ========================================
+   RESPONSIVE
+   ========================================= */
 
 @media (max-width: 768px) {
     .container {

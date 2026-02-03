@@ -1,5 +1,6 @@
 /**
  * TRIVIAL PURSUIT ÉDUCATIF - Logique du Jeu
+ * Avec chronomètre et statistiques joueurs
  */
 
 let gameState = {
@@ -10,7 +11,21 @@ let gameState = {
     questionNumber: 0,
     boardCells: [],
     isRolling: false,
-    gameStarted: false
+    gameStarted: false,
+    gameStartTime: null,
+    questionStartTime: null,
+    timerInterval: null,
+    timeLimit: 30 // secondes par question
+};
+
+// Statistiques de la session
+let sessionStats = {
+    startTime: null,
+    totalTime: 0,
+    questionsAnswered: 0,
+    correctAnswers: 0,
+    wrongAnswers: 0,
+    playerStats: {} // stats par joueur
 };
 
 const PLAYER_COLORS = ['#00f5ff', '#ff00ff', '#22c55e', '#f97316'];
@@ -85,7 +100,7 @@ function loadChapters() {
 
 function selectChapter(chapter) {
     gameState.currentChapter = chapter;
-    document.getElementById('selected-chapter-info').textContent = `📖 ${chapter.title} - ${chapter.subject}`;
+    document.getElementById('selected-chapter-info').textContent = '📖 ' + chapter.title + ' - ' + chapter.subject;
     showScreen('player-screen');
 }
 
@@ -104,124 +119,123 @@ function changePlayerCount(delta) {
 function generatePlayerInputs() {
     const container = document.getElementById('player-names');
     container.innerHTML = '';
+
     for (let i = 0; i < playerCount; i++) {
-        const div = document.createElement('div');
-        div.className = 'player-input-group';
-        div.innerHTML = `
-            <div class="player-color" style="background: ${PLAYER_COLORS[i]}"></div>
-            <input type="text" class="player-input" id="player-name-${i}" placeholder="Joueur ${i + 1}" maxlength="20">
-        `;
-        container.appendChild(div);
+        const group = document.createElement('div');
+        group.className = 'player-input-group';
+        group.innerHTML = '<div class="player-color" style="background: ' + PLAYER_COLORS[i] + '; box-shadow: 0 0 20px ' + PLAYER_COLORS[i] + '"></div>' +
+            '<input type="text" class="player-input" placeholder="Joueur ' + (i + 1) + '" maxlength="15" value="Joueur ' + (i + 1) + '">';
+        container.appendChild(group);
     }
 }
 
-function generateLegend() {
-    const container = document.getElementById('legend-items');
-    container.innerHTML = '';
-    DIFFICULTY_LEVELS.forEach(level => {
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        item.innerHTML = `<div class="legend-color" style="background: ${level.color}"></div><span>${level.name}</span>`;
-        container.appendChild(item);
-    });
-}
-
-// ========================================
-// GAME START
-// ========================================
-
 function startGame() {
+    const inputs = document.querySelectorAll('.player-input');
     gameState.players = [];
-    for (let i = 0; i < playerCount; i++) {
-        const nameInput = document.getElementById(`player-name-${i}`);
-        const name = nameInput.value.trim() || `Joueur ${i + 1}`;
+
+    inputs.forEach(function (input, index) {
+        const playerName = input.value.trim() || 'Joueur ' + (index + 1);
         gameState.players.push({
-            name: name,
-            color: PLAYER_COLORS[i],
+            name: playerName,
+            color: PLAYER_COLORS[index],
             position: 0,
             wedges: { discovery: false, easy: false, medium: false, hard: false, expert: false, challenge: false },
             score: 0
         });
-    }
 
-    gameState.currentPlayerIndex = 0;
-    gameState.questionNumber = 0;
+        // Initialiser les stats du joueur
+        sessionStats.playerStats[playerName] = {
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            wrongAnswers: 0,
+            totalResponseTime: 0,
+            responses: [] // détail de chaque réponse
+        };
+    });
+
+    // Démarrer la session
+    sessionStats.startTime = Date.now();
+    gameState.gameStartTime = Date.now();
     gameState.gameStarted = true;
+    gameState.currentPlayerIndex = 0;
 
     showScreen('game-screen');
     generateBoard();
+    placePlayerTokens();
     renderScoreboard();
     updateTurnIndicator();
-    placePlayerTokens();
 }
 
 // ========================================
-// BOARD GENERATION
+// GAME BOARD
 // ========================================
 
 function generateBoard() {
     const board = document.getElementById('game-board');
-    board.querySelectorAll('.board-cell').forEach(cell => cell.remove());
-    gameState.boardCells = [];
+    const existingCells = board.querySelectorAll('.board-cell');
+    existingCells.forEach(function (cell) { cell.remove(); });
 
-    const boardWidth = board.offsetWidth;
-    const boardHeight = board.offsetHeight;
-    const centerX = boardWidth / 2;
-    const centerY = boardHeight / 2;
-    const radius = Math.min(boardWidth, boardHeight) / 2 - 40;
+    gameState.boardCells = [];
+    const boardRect = board.getBoundingClientRect();
+    const centerX = boardRect.width / 2;
+    const centerY = boardRect.height / 2;
+    const radius = Math.min(centerX, centerY) * 0.75;
 
     for (let i = 0; i < BOARD_SIZE; i++) {
         const angle = (i / BOARD_SIZE) * 2 * Math.PI - Math.PI / 2;
-        const x = centerX + radius * Math.cos(angle) - 25;
-        const y = centerY + radius * Math.sin(angle) - 25;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
 
         const difficultyIndex = i % DIFFICULTY_LEVELS.length;
         const difficulty = DIFFICULTY_LEVELS[difficultyIndex];
 
         const cell = document.createElement('div');
         cell.className = 'board-cell';
-        cell.dataset.index = i;
-        cell.dataset.difficulty = difficulty.id;
-        cell.style.left = x + 'px';
-        cell.style.top = y + 'px';
+        cell.style.left = (x - 27.5) + 'px';
+        cell.style.top = (y - 27.5) + 'px';
         cell.style.background = difficulty.color;
-        cell.style.boxShadow = `0 0 15px ${difficulty.color}40`;
-        cell.textContent = i + 1;
+        cell.style.color = '#fff';
+        cell.textContent = (i + 1);
+        cell.setAttribute('data-position', i);
 
+        gameState.boardCells.push({ element: cell, x: x, y: y, difficulty: difficulty });
         board.appendChild(cell);
-        gameState.boardCells.push({ element: cell, difficulty: difficulty, x: x + 25, y: y + 25 });
     }
 }
 
 function placePlayerTokens() {
     const board = document.getElementById('game-board');
-    board.querySelectorAll('.player-token').forEach(t => t.remove());
+    const existingTokens = board.querySelectorAll('.player-token');
+    existingTokens.forEach(function (token) { token.remove(); });
 
-    gameState.players.forEach((player, index) => {
+    gameState.players.forEach(function (player, index) {
         const token = document.createElement('div');
         token.className = 'player-token';
-        token.id = `token-${index}`;
+        token.id = 'token-' + index;
         token.style.background = player.color;
-
-        const cell = gameState.boardCells[player.position];
-        const offset = (index - (gameState.players.length - 1) / 2) * 8;
-        token.style.left = (cell.x - 15 + offset) + 'px';
-        token.style.top = (cell.y - 15) + 'px';
-
         board.appendChild(token);
     });
+
+    updateTokenPositions();
 }
 
-function moveToken(playerIndex, newPosition) {
-    const token = document.getElementById(`token-${playerIndex}`);
-    const cell = gameState.boardCells[newPosition];
-    const offset = (playerIndex - (gameState.players.length - 1) / 2) * 8;
+function updateTokenPositions() {
+    gameState.players.forEach(function (player, index) {
+        const token = document.getElementById('token-' + index);
+        if (!token) return;
 
-    token.style.left = (cell.x - 15 + offset) + 'px';
-    token.style.top = (cell.y - 15) + 'px';
+        const cell = gameState.boardCells[player.position];
+        if (cell) {
+            const offsetAngle = (index / gameState.players.length) * Math.PI * 0.5;
+            const offsetRadius = 15;
+            token.style.left = (cell.x - 17.5 + Math.cos(offsetAngle) * offsetRadius) + 'px';
+            token.style.top = (cell.y - 17.5 + Math.sin(offsetAngle) * offsetRadius) + 'px';
+        }
 
-    document.querySelectorAll('.board-cell').forEach(c => c.classList.remove('current'));
-    cell.element.classList.add('current');
+        gameState.boardCells.forEach(function (c, i) {
+            c.element.classList.toggle('current', i === player.position && index === gameState.currentPlayerIndex);
+        });
+    });
 }
 
 // ========================================
@@ -237,35 +251,43 @@ function rollDice() {
     dice.classList.add('rolling');
 
     let rolls = 0;
-    const rollInterval = setInterval(() => {
+    const maxRolls = 10;
+    const rollInterval = setInterval(function () {
         diceValue.textContent = Math.floor(Math.random() * 6) + 1;
         rolls++;
-        if (rolls >= 10) {
+
+        if (rolls >= maxRolls) {
             clearInterval(rollInterval);
             const finalValue = Math.floor(Math.random() * 6) + 1;
             diceValue.textContent = finalValue;
             dice.classList.remove('rolling');
-            setTimeout(() => moveCurrentPlayer(finalValue), 300);
+
+            setTimeout(function () { movePlayer(finalValue); }, 300);
         }
     }, 100);
 }
 
-function moveCurrentPlayer(steps) {
+function movePlayer(steps) {
     const player = gameState.players[gameState.currentPlayerIndex];
-    const newPosition = (player.position + steps) % BOARD_SIZE;
-    player.position = newPosition;
+    let currentStep = 0;
 
-    moveToken(gameState.currentPlayerIndex, newPosition);
+    const moveInterval = setInterval(function () {
+        currentStep++;
+        player.position = (player.position + 1) % BOARD_SIZE;
+        updateTokenPositions();
 
-    setTimeout(() => {
-        const cell = gameState.boardCells[newPosition];
-        showQuestion(cell.difficulty);
-        gameState.isRolling = false;
-    }, 500);
+        if (currentStep >= steps) {
+            clearInterval(moveInterval);
+            gameState.isRolling = false;
+
+            const currentCell = gameState.boardCells[player.position];
+            setTimeout(function () { showQuestion(currentCell.difficulty); }, 500);
+        }
+    }, 300);
 }
 
 // ========================================
-// QUESTIONS
+// QUESTIONS & TIMER
 // ========================================
 
 function showQuestion(difficulty) {
@@ -291,12 +313,11 @@ function showQuestion(difficulty) {
         });
     }
 
-    // Fisher-Yates shuffle - mélange aléatoire
+    // Fisher-Yates shuffle
     let currentIndex = answersToShuffle.length;
     while (currentIndex > 0) {
         let randomIdx = Math.floor(Math.random() * currentIndex);
         currentIndex--;
-        // Échanger les éléments
         let tempItem = answersToShuffle[currentIndex];
         answersToShuffle[currentIndex] = answersToShuffle[randomIdx];
         answersToShuffle[randomIdx] = tempItem;
@@ -311,17 +332,17 @@ function showQuestion(difficulty) {
         }
     }
 
-    // Debug - afficher dans la console
-    console.log('Réponses mélangées:', answersToShuffle.map(a => a.text));
-    console.log('Position correcte:', correctPosition);
-
     gameState.currentQuestion = {
         question: question.question,
         courseReminder: question.courseReminder,
         difficulty: difficulty,
-        shuffledAnswers: answersToShuffle.map(a => a.text),
+        shuffledAnswers: answersToShuffle.map(function (a) { return a.text; }),
         shuffledCorrect: correctPosition
     };
+
+    // Démarrer le chronomètre
+    gameState.questionStartTime = Date.now();
+    startTimer();
 
     document.getElementById('question-difficulty').textContent = difficulty.name;
     document.getElementById('question-difficulty').style.background = difficulty.color;
@@ -349,55 +370,156 @@ function showQuestion(difficulty) {
     document.getElementById('question-modal').classList.add('active');
 }
 
+function startTimer() {
+    const timerDisplay = document.getElementById('timer-display');
+    if (!timerDisplay) return;
+
+    let timeLeft = gameState.timeLimit;
+    updateTimerDisplay(timeLeft);
+
+    if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+
+    gameState.timerInterval = setInterval(function () {
+        timeLeft--;
+        updateTimerDisplay(timeLeft);
+
+        if (timeLeft <= 0) {
+            clearInterval(gameState.timerInterval);
+            timeExpired();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay(seconds) {
+    const timerDisplay = document.getElementById('timer-display');
+    if (!timerDisplay) return;
+
+    timerDisplay.textContent = seconds + 's';
+
+    // Changer la couleur selon le temps restant
+    if (seconds <= 5) {
+        timerDisplay.classList.add('timer-critical');
+        timerDisplay.classList.remove('timer-warning');
+    } else if (seconds <= 10) {
+        timerDisplay.classList.add('timer-warning');
+        timerDisplay.classList.remove('timer-critical');
+    } else {
+        timerDisplay.classList.remove('timer-warning', 'timer-critical');
+    }
+}
+
+function stopTimer() {
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
+}
+
+function timeExpired() {
+    // Temps écoulé = mauvaise réponse
+    const question = gameState.currentQuestion;
+    const player = gameState.players[gameState.currentPlayerIndex];
+    const responseTime = gameState.timeLimit;
+
+    // Enregistrer les stats
+    logPlayerResponse(player.name, false, responseTime, question);
+
+    const buttons = document.querySelectorAll('.answer-btn');
+    buttons.forEach(function (btn, index) {
+        btn.disabled = true;
+        if (index === question.shuffledCorrect) btn.classList.add('correct');
+    });
+
+    const footer = document.getElementById('question-footer');
+    footer.innerHTML = '<div class="feedback wrong">⏱️ Temps écoulé! La réponse était: ' + question.shuffledAnswers[question.shuffledCorrect] + '</div>' +
+        '<button class="btn btn-secondary" onclick="continueAfterQuestion(false)">Tour suivant →</button>';
+
+    renderScoreboard();
+}
+
 function checkAnswer(selectedIndex) {
+    stopTimer();
+
+    const responseTime = (Date.now() - gameState.questionStartTime) / 1000;
     const question = gameState.currentQuestion;
     const isCorrect = selectedIndex === question.shuffledCorrect;
     const player = gameState.players[gameState.currentPlayerIndex];
 
+    // Enregistrer les statistiques
+    logPlayerResponse(player.name, isCorrect, responseTime, question);
+
     const buttons = document.querySelectorAll('.answer-btn');
-    buttons.forEach((btn, index) => {
+    buttons.forEach(function (btn, index) {
         btn.disabled = true;
         if (index === question.shuffledCorrect) btn.classList.add('correct');
         else if (index === selectedIndex && !isCorrect) btn.classList.add('wrong');
     });
 
     const footer = document.getElementById('question-footer');
+    const timeBonus = isCorrect && responseTime < 10 ? ' ⚡ Rapide!' : '';
 
     if (isCorrect) {
         player.score += question.difficulty.points;
 
-        const difficultyIndex = DIFFICULTY_LEVELS.findIndex(d => d.id === question.difficulty.id);
+        const difficultyIndex = DIFFICULTY_LEVELS.findIndex(function (d) { return d.id === question.difficulty.id; });
         const wedgePositions = [];
         for (let i = difficultyIndex; i < BOARD_SIZE; i += DIFFICULTY_LEVELS.length) wedgePositions.push(i);
 
         if (wedgePositions.includes(player.position) && !player.wedges[question.difficulty.id]) {
             player.wedges[question.difficulty.id] = true;
-            footer.innerHTML = `
-                <div class="feedback correct">✅ Bonne réponse! +${question.difficulty.points} pts<br>🎯 Camembert ${question.difficulty.name} gagné!</div>
-                <button class="btn btn-primary" onclick="continueAfterQuestion(true)">Rejouer 🎲</button>
-            `;
+            footer.innerHTML = '<div class="feedback correct">✅ Bonne réponse en ' + responseTime.toFixed(1) + 's! +' + question.difficulty.points + ' pts' + timeBonus + '<br>🎯 Camembert ' + question.difficulty.name + ' gagné!</div>' +
+                '<button class="btn btn-primary" onclick="continueAfterQuestion(true)">Rejouer 🎲</button>';
         } else {
-            footer.innerHTML = `
-                <div class="feedback correct">✅ Bonne réponse! +${question.difficulty.points} points</div>
-                <button class="btn btn-primary" onclick="continueAfterQuestion(true)">Rejouer 🎲</button>
-            `;
+            footer.innerHTML = '<div class="feedback correct">✅ Bonne réponse en ' + responseTime.toFixed(1) + 's! +' + question.difficulty.points + ' points' + timeBonus + '</div>' +
+                '<button class="btn btn-primary" onclick="continueAfterQuestion(true)">Rejouer 🎲</button>';
         }
 
-        if (Object.values(player.wedges).every(w => w)) {
-            setTimeout(() => showVictory(player), 1000);
+        if (Object.values(player.wedges).every(function (w) { return w; })) {
+            setTimeout(function () { showVictory(player); }, 1000);
             return;
         }
     } else {
-        footer.innerHTML = `
-            <div class="feedback wrong">❌ Mauvaise réponse! C'était: ${question.shuffledAnswers[question.shuffledCorrect]}</div>
-            <button class="btn btn-secondary" onclick="continueAfterQuestion(false)">Tour suivant →</button>
-        `;
+        footer.innerHTML = '<div class="feedback wrong">❌ Mauvaise réponse en ' + responseTime.toFixed(1) + 's. C\'était: ' + question.shuffledAnswers[question.shuffledCorrect] + '</div>' +
+            '<button class="btn btn-secondary" onclick="continueAfterQuestion(false)">Tour suivant →</button>';
     }
 
     renderScoreboard();
 }
 
+function logPlayerResponse(playerName, isCorrect, responseTime, question) {
+    // Stats globales
+    sessionStats.questionsAnswered++;
+    if (isCorrect) {
+        sessionStats.correctAnswers++;
+    } else {
+        sessionStats.wrongAnswers++;
+    }
+
+    // Stats du joueur
+    const playerStats = sessionStats.playerStats[playerName];
+    if (playerStats) {
+        playerStats.questionsAnswered++;
+        playerStats.totalResponseTime += responseTime;
+        if (isCorrect) {
+            playerStats.correctAnswers++;
+        } else {
+            playerStats.wrongAnswers++;
+        }
+        playerStats.responses.push({
+            question: question.question,
+            difficulty: question.difficulty.name,
+            isCorrect: isCorrect,
+            responseTime: responseTime,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    // Log dans la console pour debug
+    console.log('📊 Stats:', playerName, isCorrect ? '✅' : '❌', responseTime.toFixed(1) + 's');
+}
+
 function continueAfterQuestion(replay) {
+    stopTimer();
     document.getElementById('question-modal').classList.remove('active');
     if (!replay) nextTurn();
 }
@@ -418,45 +540,70 @@ function updateTurnIndicator() {
     document.getElementById('current-player-name').style.color = player.color;
 }
 
+function generateLegend() {
+    const container = document.getElementById('legend-items');
+    container.innerHTML = '';
+
+    DIFFICULTY_LEVELS.forEach(function (level) {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = '<div class="legend-color" style="background: ' + level.color + '"></div><span>' + level.name + ' (' + level.points + ' pt' + (level.points > 1 ? 's' : '') + ')</span>';
+        container.appendChild(item);
+    });
+}
+
 function renderScoreboard() {
     const container = document.getElementById('scores-container');
     container.innerHTML = '';
 
-    gameState.players.forEach((player, index) => {
+    gameState.players.forEach(function (player, index) {
         const card = document.createElement('div');
         card.className = 'score-card' + (index === gameState.currentPlayerIndex ? ' active' : '');
+        card.style.borderLeftColor = player.color;
 
-        let wedgesHtml = '';
-        DIFFICULTY_LEVELS.forEach(level => {
+        let wedgesHTML = '';
+        DIFFICULTY_LEVELS.forEach(function (level) {
             const earned = player.wedges[level.id];
-            wedgesHtml += `<div class="wedge ${earned ? 'earned' : ''}" style="background: ${level.color}; color: ${level.color}"></div>`;
+            wedgesHTML += '<div class="wedge' + (earned ? ' earned' : '') + '" style="background: ' + level.color + '; color: ' + level.color + '"></div>';
         });
 
-        card.innerHTML = `
-            <div class="score-name"><span style="color: ${player.color}">●</span> ${player.name}</div>
-            <div class="score-wedges">${wedgesHtml}</div>
-        `;
+        // Afficher les stats du joueur
+        const playerStats = sessionStats.playerStats[player.name];
+        let statsText = '';
+        if (playerStats && playerStats.questionsAnswered > 0) {
+            const accuracy = Math.round((playerStats.correctAnswers / playerStats.questionsAnswered) * 100);
+            statsText = '<div class="player-accuracy">' + accuracy + '% correct</div>';
+        }
+
+        card.innerHTML = '<div class="score-name"><span style="color: ' + player.color + '">● </span>' + player.name + ' <span style="opacity:0.6">(' + player.score + ' pts)</span></div>' +
+            statsText +
+            '<div class="score-wedges">' + wedgesHTML + '</div>';
         container.appendChild(card);
     });
 }
 
 // ========================================
-// VICTORY
+// VICTORY & STATS
 // ========================================
 
 function showVictory(winner) {
-    document.getElementById('question-modal').classList.remove('active');
+    stopTimer();
+
+    // Calculer le temps total de jeu
+    const totalGameTime = Math.round((Date.now() - gameState.gameStartTime) / 1000);
+    sessionStats.totalTime = totalGameTime;
 
     const confettiContainer = document.getElementById('confetti');
     confettiContainer.innerHTML = '';
-    const colors = ['#00f5ff', '#ff00ff', '#22c55e', '#f97316', '#ffd700', '#a855f7'];
 
+    const colors = ['#00f5ff', '#ff00ff', '#22c55e', '#ffd700', '#ef4444', '#a855f7'];
     for (let i = 0; i < 100; i++) {
         const piece = document.createElement('div');
         piece.className = 'confetti-piece';
         piece.style.left = Math.random() * 100 + '%';
         piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-        piece.style.animationDelay = Math.random() * 3 + 's';
+        piece.style.animationDelay = Math.random() * 2 + 's';
+        piece.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
         confettiContainer.appendChild(piece);
     }
 
@@ -466,23 +613,63 @@ function showVictory(winner) {
     const finalScores = document.getElementById('final-scores');
     finalScores.innerHTML = '';
 
-    [...gameState.players].sort((a, b) => b.score - a.score).forEach(player => {
+    // Afficher les scores finaux avec stats
+    var sortedPlayers = gameState.players.slice().sort(function (a, b) { return b.score - a.score; });
+    sortedPlayers.forEach(function (player) {
+        const stats = sessionStats.playerStats[player.name];
+        const avgTime = stats.questionsAnswered > 0 ? (stats.totalResponseTime / stats.questionsAnswered).toFixed(1) : 0;
+        const accuracy = stats.questionsAnswered > 0 ? Math.round((stats.correctAnswers / stats.questionsAnswered) * 100) : 0;
+
         const card = document.createElement('div');
         card.className = 'final-score-card';
-        card.innerHTML = `<div class="final-score-name" style="color: ${player.color}">${player.name}</div><div class="final-score-points">${player.score} pts</div>`;
+        card.innerHTML = '<div class="final-score-name" style="color: ' + player.color + '">' + player.name + '</div>' +
+            '<div class="final-score-points">' + player.score + ' pts</div>' +
+            '<div class="final-score-stats">' + stats.correctAnswers + '/' + stats.questionsAnswered + ' (' + accuracy + '%) • Moy: ' + avgTime + 's</div>';
         finalScores.appendChild(card);
     });
 
+    // Ajouter les stats globales
+    const statsDiv = document.createElement('div');
+    statsDiv.className = 'game-stats-summary';
+    const minutes = Math.floor(totalGameTime / 60);
+    const seconds = totalGameTime % 60;
+    statsDiv.innerHTML = '<h4>📊 Statistiques de la partie</h4>' +
+        '<p>⏱️ Durée: ' + minutes + 'min ' + seconds + 's</p>' +
+        '<p>❓ Questions: ' + sessionStats.questionsAnswered + '</p>' +
+        '<p>✅ Bonnes réponses: ' + sessionStats.correctAnswers + '</p>' +
+        '<p>❌ Mauvaises réponses: ' + sessionStats.wrongAnswers + '</p>';
+    finalScores.appendChild(statsDiv);
+
     document.getElementById('victory-modal').classList.add('active');
+
+    // Log final dans la console
+    console.log('📊 STATISTIQUES FINALES:', sessionStats);
 }
 
 function restartGame() {
     document.getElementById('victory-modal').classList.remove('active');
-    gameState.players.forEach(player => {
+
+    // Reset stats des joueurs
+    gameState.players.forEach(function (player) {
         player.position = 0;
         player.wedges = { discovery: false, easy: false, medium: false, hard: false, expert: false, challenge: false };
         player.score = 0;
+        sessionStats.playerStats[player.name] = {
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            wrongAnswers: 0,
+            totalResponseTime: 0,
+            responses: []
+        };
     });
+
+    // Reset stats globales
+    sessionStats.questionsAnswered = 0;
+    sessionStats.correctAnswers = 0;
+    sessionStats.wrongAnswers = 0;
+    sessionStats.startTime = Date.now();
+
+    gameState.gameStartTime = Date.now();
     gameState.currentPlayerIndex = 0;
     gameState.questionNumber = 0;
     placePlayerTokens();
@@ -493,7 +680,28 @@ function restartGame() {
 
 function newGame() {
     document.getElementById('victory-modal').classList.remove('active');
-    gameState = { currentChapter: null, players: [], currentPlayerIndex: 0, currentQuestion: null, questionNumber: 0, boardCells: [], isRolling: false, gameStarted: false };
+    gameState = {
+        currentChapter: null,
+        players: [],
+        currentPlayerIndex: 0,
+        currentQuestion: null,
+        questionNumber: 0,
+        boardCells: [],
+        isRolling: false,
+        gameStarted: false,
+        gameStartTime: null,
+        questionStartTime: null,
+        timerInterval: null,
+        timeLimit: 30
+    };
+    sessionStats = {
+        startTime: null,
+        totalTime: 0,
+        questionsAnswered: 0,
+        correctAnswers: 0,
+        wrongAnswers: 0,
+        playerStats: {}
+    };
     playerCount = 2;
     document.getElementById('player-count').textContent = '2';
     generatePlayerInputs();
@@ -505,15 +713,15 @@ function newGame() {
 // ========================================
 
 function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(function (screen) { screen.classList.remove('active'); });
     document.getElementById(screenId).classList.add('active');
 
     if (screenId === 'game-screen' && gameState.gameStarted) {
-        setTimeout(() => { generateBoard(); placePlayerTokens(); }, 100);
+        setTimeout(function () { generateBoard(); placePlayerTokens(); }, 100);
     }
 }
 
-window.addEventListener('resize', () => {
+window.addEventListener('resize', function () {
     if (gameState.gameStarted && document.getElementById('game-screen').classList.contains('active')) {
         generateBoard();
         placePlayerTokens();
