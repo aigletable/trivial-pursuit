@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivial Pursuit Éducatif - Révise en jouant!</title>
+    <meta name="description" content="Jeu éducatif de type Trivial Pursuit pour réviser vos cours de manière ludique">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- SCREEN 1: Chapter Selection -->
+        <section id="chapter-screen" class="screen active">
+            <div class="glass-panel">
+                <h1 class="neon-title">🎮 TRIVIAL PURSUIT</h1>
+                <h2 class="subtitle">Choisis ton chapitre de révision</h2>
+
+                <div class="chapters-grid" id="chapters-list">
+                    <!-- Chapters loaded from chapters.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: Player Setup -->
+        <section id="player-screen" class="screen">
+            <div class="glass-panel">
+                <h2 class="neon-title">👥 JOUEURS</h2>
+                <p class="chapter-info" id="selected-chapter-info"></p>
+
+                <div class="players-setup">
+                    <div class="player-count">
+                        <label>Nombre de joueurs:</label>
+                        <div class="count-selector">
+                            <button class="count-btn" onclick="changePlayerCount(-1)">−</button>
+                            <span id="player-count">2</span>
+                            <button class="count-btn" onclick="changePlayerCount(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="player-names" id="player-names"></div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="showScreen('chapter-screen')">← Retour</button>
+                    <button class="btn btn-primary" onclick="startGame()">Commencer 🚀</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: Game Board -->
+        <section id="game-screen" class="screen">
+            <div class="game-layout">
+                <!-- Scoreboard -->
+                <aside class="scoreboard glass-panel">
+                    <h3>🏆 Scores</h3>
+                    <div id="scores-container"></div>
+                </aside>
+
+                <!-- Game Board -->
+                <main class="board-container">
+                    <div class="current-turn glass-panel">
+                        <span id="turn-indicator">Tour de: </span>
+                        <span id="current-player-name" class="player-highlight">Joueur 1</span>
+                    </div>
+
+                    <div class="board" id="game-board">
+                        <div class="board-center">
+                            <div class="center-content">
+                                <span class="center-icon">🎯</span>
+                                <span class="center-text">VICTOIRE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dice-section glass-panel">
+                        <div class="dice" id="dice" onclick="rollDice()">
+                            <span id="dice-value">?</span>
+                        </div>
+                        <p class="dice-hint">Clique pour lancer!</p>
+                    </div>
+                </main>
+
+                <!-- Legend -->
+                <aside class="legend glass-panel">
+                    <h3>📊 Niveaux</h3>
+                    <div class="legend-items" id="legend-items"></div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- Question Modal -->
+        <div id="question-modal" class="modal">
+            <div class="modal-content glass-panel">
+                <div class="question-header">
+                    <span class="difficulty-badge" id="question-difficulty">MOYEN</span>
+                    <span class="question-number" id="question-number">Question 1</span>
+                </div>
+
+                <!-- Course Reminder -->
+                <div class="course-reminder" id="course-reminder">
+                    <h4>📚 Rappel de cours</h4>
+                    <p id="course-text"></p>
+                </div>
+
+                <div class="question-body">
+                    <h3 id="question-text">La question apparaîtra ici...</h3>
+                    <div class="answers" id="answers-container"></div>
+                </div>
+
+                <div class="question-footer" id="question-footer"></div>
+            </div>
+        </div>
+
+        <!-- Victory Modal -->
+        <div id="victory-modal" class="modal">
+            <div class="modal-content glass-panel victory-panel">
+                <div class="confetti" id="confetti"></div>
+                <h1 class="victory-title">🎉 VICTOIRE! 🎉</h1>
+                <p class="winner-name" id="winner-name">Joueur 1</p>
+                <p class="winner-subtitle">a remporté la partie!</p>
+
+                <div class="final-scores" id="final-scores"></div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="restartGame()">Rejouer ce chapitre</button>
+                    <button class="btn btn-primary" onclick="newGame()">Nouveau chapitre</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chapters.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>
